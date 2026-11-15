@@ -372,6 +372,23 @@
 
                     <!-- Resumo do Valor Final e Botão de Resgate Fidelidade -->
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-4">
+                        <!-- Status do Pagamento (Pago ou Em Aberto) -->
+                        <div id="box-status-pagamento" class="pb-3 border-b border-slate-800/80">
+                            <label class="block text-xs font-medium text-slate-300 mb-2">Status do Pagamento *</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button type="button" id="btn-status-pago" onclick="selecionarStatusPagamento('pago')"
+                                    class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 text-xs sm:text-sm font-bold transition-all">
+                                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                    <span>Pago</span>
+                                </button>
+                                <button type="button" id="btn-status-aberto" onclick="selecionarStatusPagamento('em_aberto')"
+                                    class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all">
+                                    <i data-lucide="clock" class="w-4 h-4"></i>
+                                    <span>Em Aberto</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Campo de Desconto Livre (sem valor fixo) -->
                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-3 border-b border-slate-800/80">
                             <div class="sm:col-span-5">
@@ -612,18 +629,68 @@
                             Salvar
                         </button>
                     </div>
+            <!-- Últimas Lavagens Realizadas -->
+            <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h3 class="text-base font-semibold text-white">Histórico Recente de Lavagens</h3>
+                        <p class="text-xs text-slate-400">Registros com data, hora automática, placa e status de pagamento</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <select id="filtro-status-lavagem" onchange="atualizarDashboard()"
+                            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+                            <option value="TODOS">Todos os Pagamentos</option>
+                            <option value="pago">Somente Pagos</option>
+                            <option value="em_aberto">Somente Em Aberto</option>
+                        </select>
+                        <button onclick="mudarAba('nova-lavagem')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Registrar Nova Lavagem</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/60 border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400">
+                                <th class="py-3 px-5 font-medium">Data / Hora</th>
+                                <th class="py-3 px-5 font-medium">Cliente & Placa</th>
+                                <th class="py-3 px-5 font-medium">Veículo & Serviços</th>
+                                <th class="py-3 px-5 font-medium text-center">Pagamento</th>
+                                <th class="py-3 px-5 font-medium text-right">Valor</th>
+                                <th class="py-3 px-5 font-medium text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-lavagens-recentes" class="divide-y divide-slate-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+                <div id="vazio-lavagens" class="hidden py-10 text-center text-slate-500 text-sm">
+                    Nenhuma lavagem registrada neste período.
+                </div>
+            </section>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- ABA 2: NOVA LAVAGEM & FIDELIDADE AUTOMÁTICA                           -->
+                    <div class="lg:col-span-3 flex gap-2">
+                        <div class="flex-1">
+                            <label for="gasto-data" class="block text-xs font-medium text-slate-300 mb-1.5">Data *</label>
+                            <input type="date" id="gasto-data" required
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]">
+                        </div>
+                        <button type="submit" class="self-end px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm shadow-lg shadow-rose-600/20 transition-all">
+                            Salvar
+                        </button>
+                    </div>
                 </form>
             </div>
 
             <!-- Tabela de Gastos -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
                 <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Histórico de Gastos</h3>
-                        <p class="text-xs text-slate-400">Todas as saídas financeiras registradas</p>
-                    </div>
+                    <h3 class="text-base font-semibold text-white">Histórico de Despesas</h3>
                     <select id="filtro-gasto-categoria" onchange="renderizarTabelaGastos()"
-                        class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+                        class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
                         <option value="TODAS">Todas as Categorias</option>
                         <option value="Produtos Químicos/Estética">Produtos Químicos/Estética</option>
                         <option value="Água/Energia">Água/Energia</option>
@@ -632,7 +699,6 @@
                         <option value="Outros">Outros</option>
                     </select>
                 </div>
-
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -641,7 +707,7 @@
                                 <th class="py-3 px-5 font-medium">Descrição</th>
                                 <th class="py-3 px-5 font-medium">Categoria</th>
                                 <th class="py-3 px-5 font-medium text-right">Valor</th>
-                                <th class="py-3 px-5 font-medium text-center">Excluir</th>
+                                <th class="py-3 px-5 font-medium text-center">Ação</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-gastos" class="divide-y divide-slate-800/60 text-sm"></tbody>
@@ -689,6 +755,7 @@
         let lavagens = [];
         let gastos = [];
         let veiculoAtual = 'moto';
+        let statusPagamentoAtual = 'pago';
         let resgateGratisAtivo = false;
         let periodoDashboard = 'mes';
         let chartReceitaGasto = null;
@@ -873,6 +940,21 @@
             input.value = val;
         }
 
+        function selecionarStatusPagamento(status) {
+            statusPagamentoAtual = status;
+            const btnPago = document.getElementById('btn-status-pago');
+            const btnAberto = document.getElementById('btn-status-aberto');
+
+            if (status === 'pago') {
+                btnPago.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 text-xs sm:text-sm font-bold transition-all';
+                btnAberto.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all';
+            } else {
+                btnAberto.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-amber-500 bg-amber-500/15 text-amber-300 text-xs sm:text-sm font-bold transition-all';
+                btnPago.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all';
+            }
+            lucide.createIcons();
+        }
+
         // Lógica de Cálculo de Preços (Regras exatas do usuário)
         function selecionarVeiculo(tipo) {
             veiculoAtual = tipo;
@@ -1025,7 +1107,7 @@
                     c.gratisResgatadas += 1;
                     if (c.gratisDisponiveis > 0) c.gratisDisponiveis -= 1;
                     c.lavagensPagasNoCiclo = 0;
-                } else {
+                } else if ((lav.statusPagamento || 'pago') === 'pago') {
                     c.lavagensPagasNoCiclo += 1;
                     if (c.lavagensPagasNoCiclo >= 5) {
                         c.gratisDisponiveis += 1;
@@ -1119,9 +1201,13 @@
         function alternarResgateGratis() {
             resgateGratisAtivo = !resgateGratisAtivo;
             const textoBtn = document.getElementById('texto-btn-resgate');
+            const boxStatusPag = document.getElementById('box-status-pagamento');
             textoBtn.textContent = resgateGratisAtivo
                 ? 'Cancelar Resgate (Cobrar Normal)'
                 : 'Resgatar Lavagem Grátis (R$ 0,00)';
+            if (boxStatusPag) {
+                boxStatusPag.classList.toggle('hidden', resgateGratisAtivo);
+            }
             calcularPrecoLavagem();
         }
 
@@ -1140,6 +1226,7 @@
                 const { subtotal, desconto, preco, servicos } = calcularPrecoLavagem();
                 const obsDesconto = document.getElementById('lav-obs-desconto').value.trim();
                 const agora = new Date();
+                const statusFinal = (resgateGratisAtivo || preco === 0) ? 'pago' : statusPagamentoAtual;
 
                 const novaLavagem = {
                     id: Date.now().toString(),
@@ -1151,6 +1238,7 @@
                     desconto,
                     obsDesconto,
                     valor: preco,
+                    statusPagamento: statusFinal,
                     isGratis: resgateGratisAtivo,
                     timestamp: agora.toISOString()
                 };
@@ -1165,7 +1253,10 @@
                 document.getElementById('lav-obs-desconto').value = '';
                 document.getElementById('card-status-fidelidade').classList.add('hidden');
                 document.getElementById('btn-resgatar-gratis').classList.add('hidden');
+                const boxStatusPag = document.getElementById('box-status-pagamento');
+                if (boxStatusPag) boxStatusPag.classList.remove('hidden');
                 resgateGratisAtivo = false;
+                selecionarStatusPagamento('pago');
                 selecionarVeiculo('moto');
 
                 atualizarTudo();
@@ -1202,6 +1293,7 @@
             const dt = new Date(lav.timestamp);
             const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             const temDesconto = !lav.isGratis && lav.desconto > 0;
+            const isEmAberto = !lav.isGratis && (lav.statusPagamento || 'pago') === 'em_aberto';
 
             const clienteResumo = buscarClientePorNomeOuPlaca(lav.cliente, lav.placa);
             const textoFidelidade = clienteResumo
@@ -1216,7 +1308,8 @@
                 `🚘 Veículo: ${lav.veiculo.toUpperCase()} (${lav.placa})\n` +
                 `✨ Serviços: ${lav.servicos}\n` +
                 (temDesconto ? `🏷️ Desconto: - ${formatarMoeda(lav.desconto)}${lav.obsDesconto ? ` (${lav.obsDesconto})` : ''}\n` : '') +
-                `💰 Total Pago: ${lav.isGratis ? 'GRÁTIS (Prêmio Fidelidade!)' : formatarMoeda(lav.valor)}\n` +
+                `💰 Valor: ${lav.isGratis ? 'GRÁTIS (Prêmio Fidelidade!)' : formatarMoeda(lav.valor)}\n` +
+                `📌 Pagamento: ${lav.isGratis ? 'QUITADO (Fidelidade)' : (isEmAberto ? '⏳ EM ABERTO' : '✅ PAGO')}\n` +
                 (textoFidelidade ? `\n${textoFidelidade}` : '');
 
             const urlWhats = `https://wa.me/?text=${encodeURIComponent(textoWhats)}`;
@@ -1228,6 +1321,7 @@
                     <p><span class="text-slate-400">Cliente:</span> <strong class="text-white">${escapeHTML(lav.cliente)}</strong> (${lav.placa})</p>
                     <p><span class="text-slate-400">Serviços:</span> <span class="text-slate-200">${escapeHTML(lav.servicos)}</span></p>
                     ${temDesconto ? `<p><span class="text-slate-400">Desconto aplicado:</span> <strong class="text-rose-400">- ${formatarMoeda(lav.desconto)}</strong> ${lav.obsDesconto ? `<span class="text-slate-500">(${escapeHTML(lav.obsDesconto)})</span>` : ''}</p>` : ''}
+                    <p><span class="text-slate-400">Status:</span> ${isEmAberto ? '<strong class="text-amber-400">⏳ EM ABERTO</strong>' : '<strong class="text-emerald-400">✅ PAGO</strong>'}</p>
                     <p><span class="text-slate-400">Total:</span> <strong class="text-emerald-400 text-sm">${lav.isGratis ? 'R$ 0,00 (Fidelidade)' : formatarMoeda(lav.valor)}</strong></p>
                     ${textoFidelidade ? `<p class="pt-1 text-amber-300 font-medium">${textoFidelidade}</p>` : ''}
                 </div>
@@ -1294,12 +1388,23 @@
             const lavFiltradas = filtrarPorPeriodo(lavagens, 'timestamp', true);
             const gasFiltrados = filtrarPorPeriodo(gastos, 'data', false);
 
-            const faturamento = lavFiltradas.reduce((acc, l) => acc + l.valor, 0);
+            const faturamentoPago = lavFiltradas
+                .filter(l => (l.statusPagamento || 'pago') === 'pago')
+                .reduce((acc, l) => acc + l.valor, 0);
+            const valorEmAberto = lavFiltradas
+                .filter(l => !l.isGratis && (l.statusPagamento || 'pago') === 'em_aberto')
+                .reduce((acc, l) => acc + l.valor, 0);
             const totalGastos = gasFiltrados.reduce((acc, g) => acc + g.valor, 0);
-            const lucro = faturamento - totalGastos;
+            const lucro = faturamentoPago - totalGastos;
             const qtdGratis = lavFiltradas.filter(l => l.isGratis).length;
 
-            document.getElementById('dash-faturamento').textContent = formatarMoeda(faturamento);
+            document.getElementById('dash-faturamento').textContent = formatarMoeda(faturamentoPago);
+            const elFatSub = document.getElementById('dash-faturamento-sub');
+            if (elFatSub) {
+                elFatSub.innerHTML = valorEmAberto > 0
+                    ? `<span class="text-amber-400 font-medium">Em aberto: ${formatarMoeda(valorEmAberto)}</span>`
+                    : 'Tudo recebido no período';
+            }
             document.getElementById('dash-gastos').textContent = formatarMoeda(totalGastos);
 
             const elLucro = document.getElementById('dash-lucro');
@@ -1309,8 +1414,25 @@
             document.getElementById('dash-qtd-lavagens').textContent = lavFiltradas.length;
             document.getElementById('dash-qtd-gratis').textContent = `${qtdGratis} resgate(s) de fidelidade`;
 
-            renderizarTabelaLavagensRecentes(lavFiltradas);
-            renderizarGraficos(faturamento, totalGastos, gasFiltrados);
+            const filtroStatus = document.getElementById('filtro-status-lavagem')?.value || 'TODOS';
+            const lavTabela = lavFiltradas.filter(l => {
+                const st = l.statusPagamento || 'pago';
+                if (filtroStatus === 'TODAS' || filtroStatus === 'TODOS') return true;
+                return st === filtroStatus;
+            });
+
+            renderizarTabelaLavagensRecentes(lavTabela);
+            renderizarGraficos(faturamentoPago, totalGastos, gasFiltrados);
+        }
+
+        function alternarStatusPagamentoLavagem(id) {
+            const lav = lavagens.find(l => l.id === id);
+            if (!lav || lav.isGratis) return;
+            const atual = lav.statusPagamento || 'pago';
+            lav.statusPagamento = atual === 'pago' ? 'em_aberto' : 'pago';
+            salvarDados();
+            atualizarTudo();
+            mostrarToast(lav.statusPagamento === 'pago' ? 'Pagamento marcado como PAGO!' : 'Pagamento marcado como EM ABERTO.');
         }
 
         function renderizarTabelaLavagensRecentes(lista) {
@@ -1327,6 +1449,7 @@
             tbody.innerHTML = lista.map(lav => {
                 const dt = new Date(lav.timestamp);
                 const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const isEmAberto = !lav.isGratis && (lav.statusPagamento || 'pago') === 'em_aberto';
                 return `
                     <tr class="hover:bg-slate-800/40 transition-colors">
                         <td class="py-3 px-5 text-xs font-mono text-slate-400 whitespace-nowrap">${dataFmt}</td>
@@ -1339,10 +1462,22 @@
                             <p class="text-xs text-slate-300">${escapeHTML(lav.servicos)}</p>
                             ${!lav.isGratis && lav.desconto > 0 ? `<p class="text-xs text-rose-400 mt-0.5">Desconto: - ${formatarMoeda(lav.desconto)}${lav.obsDesconto ? ` (${escapeHTML(lav.obsDesconto)})` : ''}</p>` : ''}
                         </td>
+                        <td class="py-3 px-5 text-center whitespace-nowrap">
+                            ${lav.isGratis
+                                ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">Fidelidade</span>'
+                                : `<button onclick="alternarStatusPagamentoLavagem('${lav.id}')" title="Clique para alternar entre Pago e Em Aberto"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${isEmAberto
+                                        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25'
+                                        : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/25'}">
+                                    <span class="w-1.5 h-1.5 rounded-full ${isEmAberto ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+                                    ${isEmAberto ? 'Em Aberto' : 'Pago'}
+                                  </button>`
+                            }
+                        </td>
                         <td class="py-3 px-5 text-right whitespace-nowrap">
                             ${lav.isGratis
                                 ? '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">GRÁTIS (Fidelidade)</span>'
-                                : `${lav.desconto > 0 ? `<span class="block text-xs text-slate-500 line-through">${formatarMoeda(lav.valorOriginal || (lav.valor + lav.desconto))}</span>` : ''}<span class="font-bold text-emerald-400">${formatarMoeda(lav.valor)}</span>`
+                                : `${lav.desconto > 0 ? `<span class="block text-xs text-slate-500 line-through">${formatarMoeda(lav.valorOriginal || (lav.valor + lav.desconto))}</span>` : ''}<span class="font-bold ${isEmAberto ? 'text-amber-300' : 'text-emerald-400'}">${formatarMoeda(lav.valor)}</span>`
                             }
                         </td>
                         <td class="py-3 px-5 text-center whitespace-nowrap">
