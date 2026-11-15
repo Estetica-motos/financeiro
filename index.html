@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DetailControl PRO - Gestão de Estética, Lavagens & Fidelidade</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js para gráficos dinâmicos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- Cabeçalho Principal -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row justify-between items-center gap-4">
+            <!-- Logo e Título -->
+            <div class="flex items-center justify-between w-full lg:w-auto">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-cyan-500 to-emerald-500 p-2.5 rounded-xl shadow-lg shadow-cyan-500/20">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-slate-950 stroke-[2.5]"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                            DetailControl <span class="text-cyan-400 font-extrabold">PRO</span>
+                        </h1>
+                        <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                            <p class="text-xs text-slate-400">Estética Auto & Moto • Lavagens, Fidelidade & Caixa</p>
+                            <!-- Selo de Persistência Permanente -->
+                            <span id="status-persistencia" class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <i data-lucide="hard-drive" class="w-3 h-3 text-emerald-400"></i>
+                                <span id="texto-persistencia">Dados salvos automaticamente no aparelho</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Relógio ao vivo (Mobile) -->
+                <div class="lg:hidden text-right">
+                    <span id="relogio-mobile" class="text-xs font-mono text-cyan-400 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700"></span>
+                </div>
+            </div>
+
+            <!-- Navegação por Abas -->
+            <nav class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800 w-full lg:w-auto overflow-x-auto">
+                <button onclick="mudarAba('visao-geral')" id="tab-visao-geral" class="tab-btn flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap bg-cyan-500 text-slate-950 shadow">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Visão Geral</span>
+                </button>
+                <button onclick="mudarAba('nova-lavagem')" id="tab-nova-lavagem" class="tab-btn flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all whitespace-nowrap">
+                    <i data-lucide="droplets" class="w-4 h-4"></i>
+                    <span>Nova Lavagem</span>
+                </button>
+                <button onclick="mudarAba('fidelidade')" id="tab-fidelidade" class="tab-btn flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all whitespace-nowrap">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                    <span>Clientes & Fidelidade</span>
+                </button>
+                <button onclick="mudarAba('gastos')" id="tab-gastos" class="tab-btn flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all whitespace-nowrap">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    <span>Gastos</span>
+                </button>
+            </nav>
+
+            <!-- Ações de Backup -->
+            <div class="hidden xl:flex items-center gap-2">
+                <button onclick="exportarBackupJSON()" title="Baixar Backup Completo (.json)" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span>Exportar Backup (.json)</span>
+                </button>
+                <label title="Importar Backup JSON" class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all">
+                    <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>Importar Backup (.json)</span>
+                    <input type="file" id="input-importar-json" accept=".json" class="hidden" onchange="importarBackupJSON(event)">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+        <!-- ===================================================================== -->
+        <!-- ABA 1: VISÃO GERAL (DASHBOARD FINANCEIRO)                             -->
+        <!-- ===================================================================== -->
+        <div id="view-visao-geral" class="space-y-6">
+            <!-- Barra de Filtro de Período e Backup Mobile -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 border border-slate-800 p-4 rounded-2xl">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-white">Resumo Financeiro & Operacional</h2>
+                    <p class="text-xs text-slate-400">Acompanhe faturamento de lavagens, despesas e lucro real</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    <div class="inline-flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button onclick="alterarPeriodoDashboard('hoje')" id="btn-periodo-hoje" class="periodo-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">Hoje</button>
+                        <button onclick="alterarPeriodoDashboard('mes')" id="btn-periodo-mes" class="periodo-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-cyan-400 transition-all">Este Mês</button>
+                        <button onclick="alterarPeriodoDashboard('todos')" id="btn-periodo-todos" class="periodo-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">Tudo</button>
+                    </div>
+                    <div class="flex xl:hidden items-center gap-1.5">
+                        <button onclick="exportarBackupJSON()" class="p-2 rounded-xl bg-slate-800 text-cyan-400 border border-slate-700" title="Exportar Backup">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </button>
+                        <label class="p-2 rounded-xl bg-slate-800 text-emerald-400 border border-slate-700 cursor-pointer" title="Importar Backup">
+                            <i data-lucide="upload" class="w-4 h-4"></i>
+                            <input type="file" accept=".json" class="hidden" onchange="importarBackupJSON(event)">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Cards Principais (KPIs) -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Faturamento Lavagens -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Faturamento (Lavagens)</p>
+                            <h3 id="dash-faturamento" class="text-2xl sm:text-3xl font-bold text-emerald-400 mt-2">R$ 0,00</h3>
+                        </div>
+                        <div class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400">
+                            <i data-lucide="trending-up" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="dash-faturamento-sub" class="text-xs text-slate-500 mt-3">Entradas no período</p>
+                </div>
+
+                <!-- Gastos da Estética -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Gastos Totais</p>
+                            <h3 id="dash-gastos" class="text-2xl sm:text-3xl font-bold text-rose-400 mt-2">R$ 0,00</h3>
+                        </div>
+                        <div class="p-2.5 bg-rose-500/10 rounded-xl text-rose-400">
+                            <i data-lucide="trending-down" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">Insumos, contas e despesas</p>
+                </div>
+
+                <!-- Lucro Líquido -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Lucro Líquido</p>
+                            <h3 id="dash-lucro" class="text-2xl sm:text-3xl font-bold text-cyan-400 mt-2">R$ 0,00</h3>
+                        </div>
+                        <div class="p-2.5 bg-cyan-500/10 rounded-xl text-cyan-400">
+                            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">Faturamento menos gastos</p>
+                </div>
+
+                <!-- Lavagens Realizadas -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Lavagens Realizadas</p>
+                            <h3 id="dash-qtd-lavagens" class="text-2xl sm:text-3xl font-bold text-white mt-2">0</h3>
+                        </div>
+                        <div class="p-2.5 bg-amber-500/10 rounded-xl text-amber-400">
+                            <i data-lucide="car" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p id="dash-qtd-gratis" class="text-xs text-amber-400/90 mt-3">0 resgates de fidelidade</p>
+                </div>
+            </section>
+
+            <!-- Gráficos -->
+            <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Gráfico Receitas vs Gastos -->
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-semibold text-white">Receitas vs. Gastos</h3>
+                            <p class="text-xs text-slate-400">Comparativo financeiro do período selecionado</p>
+                        </div>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="graficoReceitaGasto"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico Distribuição de Despesas -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-semibold text-white">Despesas por Categoria</h3>
+                            <p class="text-xs text-slate-400">Onde o dinheiro da estética está sendo investido</p>
+                        </div>
+                    </div>
+                    <div class="h-64 w-full flex items-center justify-center">
+                        <canvas id="graficoCategorias"></canvas>
+                        <p id="msg-sem-gastos-grafico" class="hidden text-xs text-slate-500">Nenhuma despesa registrada neste período.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Últimas Lavagens Realizadas -->
+            <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h3 class="text-base font-semibold text-white">Histórico Recente de Lavagens</h3>
+                        <p class="text-xs text-slate-400">Registros com data, hora automática, placa e status de fidelidade</p>
+                    </div>
+                    <button onclick="mudarAba('nova-lavagem')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Registrar Nova Lavagem</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/60 border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400">
+                                <th class="py-3 px-5 font-medium">Data / Hora</th>
+                                <th class="py-3 px-5 font-medium">Cliente & Placa</th>
+                                <th class="py-3 px-5 font-medium">Veículo & Serviços</th>
+                                <th class="py-3 px-5 font-medium text-right">Valor</th>
+                                <th class="py-3 px-5 font-medium text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-lavagens-recentes" class="divide-y divide-slate-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+                <div id="vazio-lavagens" class="hidden py-10 text-center text-slate-500 text-sm">
+                    Nenhuma lavagem registrada neste período.
+                </div>
+            </section>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- ABA 2: NOVA LAVAGEM & FIDELIDADE AUTOMÁTICA                           -->
+        <!-- ===================================================================== -->
+        <div id="view-nova-lavagem" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Formulário de Lavagem (7 colunas) -->
+            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-cyan-500/10 text-cyan-400 rounded-xl">
+                            <i data-lucide="droplets" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Registrar Lavagem</h2>
+                            <p class="text-xs text-slate-400">Data e hora registradas automaticamente no lançamento</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl flex items-center gap-2 self-start sm:self-auto">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="timestamp-ao-vivo" class="text-xs font-mono text-slate-300">Carregando hora...</span>
+                    </div>
+                </div>
+
+                <form id="form-lavagem" class="space-y-5">
+                    <!-- Dados do Cliente e Placa -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="lav-cliente" class="block text-xs font-medium text-slate-300 mb-1.5">Nome do Cliente *</label>
+                            <input type="text" id="lav-cliente" list="lista-clientes-autocomplete" required placeholder="Ex: João Silva" oninput="verificarFidelidadeAoDigitar()"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                            <datalist id="lista-clientes-autocomplete"></datalist>
+                        </div>
+
+                        <div>
+                            <label for="lav-placa" class="block text-xs font-medium text-slate-300 mb-1.5">Placa do Veículo *</label>
+                            <input type="text" id="lav-placa" list="lista-placas-autocomplete" maxlength="8" required placeholder="Ex: ABC-1D23" oninput="formatarPlacaInput(this); verificarFidelidadeAoDigitar()"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono uppercase tracking-wider text-cyan-300 placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                            <datalist id="lista-placas-autocomplete"></datalist>
+                        </div>
+                    </div>
+
+                    <!-- Card Dinâmico de Status de Fidelidade do Cliente -->
+                    <div id="card-status-fidelidade" class="hidden rounded-2xl p-4 border transition-all">
+                        <!-- Preenchido via JS conforme o cliente/placa -->
+                    </div>
+
+                    <!-- Seleção de Tipo de Veículo -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-2">Tipo de Veículo *</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" id="btn-veiculo-moto" onclick="selecionarVeiculo('moto')"
+                                class="flex items-center justify-center gap-2.5 p-3.5 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-white font-semibold transition-all">
+                                <i data-lucide="bike" class="w-5 h-5 text-cyan-400"></i>
+                                <span>MOTO</span>
+                            </button>
+                            <button type="button" id="btn-veiculo-carro" onclick="selecionarVeiculo('carro')"
+                                class="flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white font-semibold transition-all">
+                                <i data-lucide="car" class="w-5 h-5"></i>
+                                <span>CARRO</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pacotes e Adicionais conforme regras exatas -->
+                    <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-4">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                    Base Inclusa: Lavagem Simples
+                                </span>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Inclui: <strong class="text-slate-200">Pré-lavagem, esfregação, cera e pretinho</strong>.
+                                </p>
+                            </div>
+                            <span id="preco-base-label" class="text-sm font-bold text-white bg-slate-800 px-2.5 py-1 rounded-lg">R$ 20,00</span>
+                        </div>
+
+                        <div class="border-t border-slate-800/80 pt-3 space-y-2.5">
+                            <p class="text-xs font-medium text-slate-300">Adicionais / Pacotes Disponíveis:</p>
+
+                            <!-- Opção Revitalização de Plásticos -->
+                            <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="chk-revitalizacao" onchange="calcularPrecoLavagem()" class="w-4 h-4 rounded accent-cyan-500">
+                                    <div>
+                                        <p class="text-sm font-medium text-white">Revitalização de Plásticos</p>
+                                        <p id="desc-revitalizacao" class="text-xs text-slate-400">Lavagem Simples + Revitalização = R$ 25,00</p>
+                                    </div>
+                                </div>
+                                <span id="badge-revitalizacao" class="text-xs font-semibold text-cyan-400">+ R$ 5,00</span>
+                            </label>
+
+                            <!-- Opção Desmontagem (Exclusivo Moto) -->
+                            <label id="box-opcao-desmontagem" class="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="chk-desmontagem" onchange="calcularPrecoLavagem()" class="w-4 h-4 rounded accent-cyan-500">
+                                    <div>
+                                        <p class="text-sm font-medium text-white">Com Desmontagem (Moto)</p>
+                                        <p class="text-xs text-slate-400">Lavagem Simples + Desmontagem = R$ 35,00</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-semibold text-cyan-400">+ R$ 15,00</span>
+                            </label>
+
+                            <!-- Opção Aspiração Interna (Exclusivo Carro) -->
+                            <label id="box-opcao-aspiracao" class="hidden flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="chk-aspiracao" onchange="calcularPrecoLavagem()" class="w-4 h-4 rounded accent-cyan-500">
+                                    <div>
+                                        <p class="text-sm font-medium text-white">Aspiração Interna</p>
+                                        <p class="text-xs text-slate-400">Lavagem + Revitalização + Aspiração = R$ 50,00</p>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-semibold text-cyan-400">+ R$ 10,00</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Resumo do Valor Final e Botão de Resgate Fidelidade -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-4">
+                        <!-- Campo de Desconto Livre (sem valor fixo) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pb-3 border-b border-slate-800/80">
+                            <div class="sm:col-span-5">
+                                <label for="lav-desconto" class="block text-xs font-medium text-slate-300 mb-1">Desconto Livre (R$)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3.5 top-2.5 text-xs font-bold text-rose-400">- R$</span>
+                                    <input type="number" id="lav-desconto" step="0.01" min="0" placeholder="0,00" oninput="calcularPrecoLavagem()"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-12 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                                </div>
+                            </div>
+                            <div class="sm:col-span-7">
+                                <label for="lav-obs-desconto" class="block text-xs font-medium text-slate-300 mb-1">Motivo / Observação (Opcional)</label>
+                                <input type="text" id="lav-obs-desconto" placeholder="Ex: Cliente parceiro, promoção, ajuste..."
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <p class="text-xs text-slate-400">Serviço Selecionado:</p>
+                                <p id="resumo-servico-texto" class="text-sm font-semibold text-white">Lavagem Simples (Moto)</p>
+                                <div id="aviso-resgate-ativo" class="hidden mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                                    <i data-lucide="gift" class="w-3.5 h-3.5"></i>
+                                    <span>PRÊMIO FIDELIDADE APLICADO (LAVAGEM GRÁTIS!)</span>
+                                </div>
+                            </div>
+                            <div class="text-center sm:text-right">
+                                <p class="text-xs text-slate-400">Total a Cobrar</p>
+                                <p id="subtotal-riscado" class="hidden text-xs text-slate-500 line-through">R$ 20,00</p>
+                                <p id="valor-final-lavagem" class="text-3xl font-extrabold text-emerald-400">R$ 20,00</p>
+                                <p id="tag-desconto-aplicado" class="hidden text-xs font-medium text-rose-400 mt-0.5">Desconto: - R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-1">
+                        <button type="button" id="btn-resgatar-gratis" onclick="alternarResgateGratis()" class="hidden flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20 transition-all">
+                            <i data-lucide="gift" class="w-5 h-5"></i>
+                            <span id="texto-btn-resgate">Resgatar Lavagem Grátis (R$ 0,00)</span>
+                        </button>
+
+                        <button type="submit" class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            <span>Finalizar & Registrar Lavagem</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabela de Preços de Referência (5 colunas) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl">
+                            <i data-lucide="tag" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Tabela Oficial de Preços</h3>
+                            <p class="text-xs text-slate-400">Clique em qualquer pacote para selecionar automaticamente</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabela Moto -->
+                    <div class="mb-5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
+                            <i data-lucide="bike" class="w-4 h-4"></i> Tabela Moto
+                        </h4>
+                        <div class="space-y-2">
+                            <button type="button" onclick="aplicarPacoteRapido('moto', false, false, false)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Lavagem Simples</p>
+                                    <p class="text-xs text-slate-400">Pré-lavagem, esfregação, cera e pretinho</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 20,00</span>
+                            </button>
+                            <button type="button" onclick="aplicarPacoteRapido('moto', true, false, false)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Simples + Revitalização de Plásticos</p>
+                                    <p class="text-xs text-slate-400">Lavagem completa + proteção de plásticos</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 25,00</span>
+                            </button>
+                            <button type="button" onclick="aplicarPacoteRapido('moto', false, true, false)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Simples + Desmontagem</p>
+                                    <p class="text-xs text-slate-400">Limpeza detalhada com desmontagem</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 35,00</span>
+                            </button>
+                            <button type="button" onclick="aplicarPacoteRapido('moto', true, true, false)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Completa (Revitalização + Desmontagem)</p>
+                                    <p class="text-xs text-slate-400">Todos os serviços de moto inclusos</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 40,00</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabela Carro -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1.5">
+                            <i data-lucide="car" class="w-4 h-4"></i> Tabela Carro
+                        </h4>
+                        <div class="space-y-2">
+                            <button type="button" onclick="aplicarPacoteRapido('carro', false, false, false)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Lavagem Simples</p>
+                                    <p class="text-xs text-slate-400">Pré-lavagem, esfregação, cera e pretinho</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 30,00</span>
+                            </button>
+                            <button type="button" onclick="aplicarPacoteRapido('carro', true, false, false)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Simples + Revitalização de Plásticos</p>
+                                    <p class="text-xs text-slate-400">Externa + revitalização de para-choques/frisos</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 40,00</span>
+                            </button>
+                            <button type="button" onclick="aplicarPacoteRapido('carro', true, false, true)" class="w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 flex justify-between items-center transition-all">
+                                <div>
+                                    <p class="text-sm font-semibold text-white">Completa (+ Aspiração Interna)</p>
+                                    <p class="text-xs text-slate-400">Simples + Revitalização + Aspiração Interna</p>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">R$ 50,00</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Explicativo Fidelidade -->
+                <div class="bg-gradient-to-br from-amber-500/10 via-slate-900 to-slate-900 border border-amber-500/30 rounded-2xl p-5">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
+                            <i data-lucide="award" class="w-5 h-5"></i>
+                        </div>
+                        <h4 class="font-bold text-amber-300 text-sm">Regra do Cartão Fidelidade</h4>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        A cada <strong>5 lavagens pagas</strong> registradas no nome ou placa do cliente, a <strong>6ª lavagem sai 100% GRÁTIS</strong>! O sistema avisa automaticamente quando o cliente atingir a meta.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- ABA 3: CLIENTES & CARTÃO FIDELIDADE                                   -->
+        <!-- ===================================================================== -->
+        <div id="view-fidelidade" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i data-lucide="award" class="w-5 h-5 text-amber-400"></i>
+                            Clientes & Controle de Fidelidade (5 + 1 Grátis)
+                        </h2>
+                        <p class="text-xs text-slate-400">Acompanhe quantas lavagens cada cliente possui e quem já tem direito à lavagem grátis</p>
+                    </div>
+                    <div class="relative w-full md:w-72">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3"></i>
+                        <input type="text" id="busca-fidelidade" oninput="renderizarClientesFidelidade()" placeholder="Buscar por nome ou placa..."
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                    </div>
+                </div>
+
+                <!-- Grid de Cards de Clientes -->
+                <div id="grid-clientes-fidelidade" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Preenchido via JS -->
+                </div>
+
+                <div id="vazio-fidelidade" class="hidden py-12 text-center text-slate-500 text-sm">
+                    Nenhum cliente cadastrado ainda. Registre a primeira lavagem na aba "Nova Lavagem"!
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- ABA 4: CONTROLE DE GASTOS DA ESTÉTICA                                 -->
+        <!-- ===================================================================== -->
+        <div id="view-gastos" class="hidden space-y-6">
+            <!-- Formulário de Despesas -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center gap-2.5 mb-5">
+                    <div class="p-2 bg-rose-500/10 text-rose-400 rounded-xl">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Registrar Despesa da Estética</h2>
+                        <p class="text-xs text-slate-400">Controle produtos químicos, equipamentos, água, energia e estrutura</p>
+                    </div>
+                </div>
+
+                <form id="form-gasto" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                    <div class="lg:col-span-4">
+                        <label for="gasto-descricao" class="block text-xs font-medium text-slate-300 mb-1.5">Descrição / Produto *</label>
+                        <input type="text" id="gasto-descricao" list="lista-produtos-estetica" required placeholder="Ex: Vonixx V-Floc, V-Mol, Delet, Shiny..."
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                        <datalist id="lista-produtos-estetica">
+                            <option value="Vonixx V-Mol (Desincrustante)">
+                            <option value="Vonixx V-Floc (Shampoo Neutro)">
+                            <option value="Vonixx Delet (Limpador de Pneus/Borrachas)">
+                            <option value="Vonixx Impact (Limpador Multiuso APC)">
+                            <option value="Vonixx Restaurax (Revitalizador de Plásticos)">
+                            <option value="Vonixx Blend (Cera Híbrida Carnaúba/SiO2)">
+                            <option value="Vonixx Shiny (Pretinho Pneus)">
+                            <option value="Vonixx Izer (Descontaminante Ferroso)">
+                            <option value="Panos de Microfibra / Pincéis Detalhamento">
+                            <option value="Conta de Água / Energia Elétrica">
+                        </datalist>
+                    </div>
+
+                    <div class="lg:col-span-3">
+                        <label for="gasto-categoria" class="block text-xs font-medium text-slate-300 mb-1.5">Categoria *</label>
+                        <select id="gasto-categoria" required
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+                            <option value="Produtos Químicos/Estética">Produtos Químicos/Estética</option>
+                            <option value="Água/Energia">Água/Energia</option>
+                            <option value="Equipamentos/Ferramentas">Equipamentos/Ferramentas</option>
+                            <option value="Aluguel/Estrutura">Aluguel/Estrutura</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <label for="gasto-valor" class="block text-xs font-medium text-slate-300 mb-1.5">Valor (R$) *</label>
+                        <input type="number" id="gasto-valor" step="0.01" min="0.01" required placeholder="0,00"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                    </div>
+
+                    <div class="lg:col-span-3 flex gap-2">
+                        <div class="flex-1">
+                            <label for="gasto-data" class="block text-xs font-medium text-slate-300 mb-1.5">Data *</label>
+                            <input type="date" id="gasto-data" required
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]">
+                        </div>
+                        <button type="submit" class="self-end px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm shadow-lg shadow-rose-600/20 transition-all">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabela de Gastos -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h3 class="text-base font-semibold text-white">Histórico de Gastos</h3>
+                        <p class="text-xs text-slate-400">Todas as saídas financeiras registradas</p>
+                    </div>
+                    <select id="filtro-gasto-categoria" onchange="renderizarTabelaGastos()"
+                        class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+                        <option value="TODAS">Todas as Categorias</option>
+                        <option value="Produtos Químicos/Estética">Produtos Químicos/Estética</option>
+                        <option value="Água/Energia">Água/Energia</option>
+                        <option value="Equipamentos/Ferramentas">Equipamentos/Ferramentas</option>
+                        <option value="Aluguel/Estrutura">Aluguel/Estrutura</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/60 border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400">
+                                <th class="py-3 px-5 font-medium">Data</th>
+                                <th class="py-3 px-5 font-medium">Descrição</th>
+                                <th class="py-3 px-5 font-medium">Categoria</th>
+                                <th class="py-3 px-5 font-medium text-right">Valor</th>
+                                <th class="py-3 px-5 font-medium text-center">Excluir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-gastos" class="divide-y divide-slate-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+                <div id="vazio-gastos" class="hidden py-10 text-center text-slate-500 text-sm">
+                    Nenhuma despesa registrada.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal de Confirmação / Comprovante WhatsApp -->
+    <div id="modal-geral" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 id="modal-titulo" class="text-lg font-bold text-white">Título</h3>
+                <button onclick="fecharModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="modal-corpo" class="text-sm text-slate-300 leading-relaxed"></div>
+            <div id="modal-rodape" class="flex justify-end gap-3 pt-2"></div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm">
+            <i id="toast-icon" data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
+            <span id="toast-msg">Mensagem</span>
+        </div>
+    </div>
+
+    <script>
+        // Chaves de armazenamento permanente (localStorage + IndexedDB)
+        const KEY_LAVAGENS = 'detailcontrol_lavagens_v2';
+        const KEY_GASTOS = 'detailcontrol_gastos_v2';
+        const DB_NAME = 'DetailControlPRO_DB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'app_state';
+
+        // Estado da Aplicação
+        let lavagens = [];
+        let gastos = [];
+        let veiculoAtual = 'moto';
+        let resgateGratisAtivo = false;
+        let periodoDashboard = 'mes';
+        let chartReceitaGasto = null;
+        let chartCategorias = null;
+
+        const CORES_GASTOS = {
+            'Produtos Químicos/Estética': '#06b6d4',
+            'Água/Energia': '#3b82f6',
+            'Equipamentos/Ferramentas': '#10b981',
+            'Aluguel/Estrutura': '#f59e0b',
+            'Outros': '#8b5cf6'
+        };
+
+        // =====================================================================
+        // CAMADA DE PERSISTÊNCIA DUPLA (localStorage + IndexedDB)
+        // =====================================================================
+        function abrirIndexedDB() {
+            return new Promise((resolve, reject) => {
+                if (!window.indexedDB) {
+                    reject(new Error('IndexedDB não suportado'));
+                    return;
+                }
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function salvarNoIndexedDB(dados) {
+            try {
+                const db = await abrirIndexedDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readwrite');
+                    const store = tx.objectStore(STORE_NAME);
+                    store.put(dados, 'backup_principal');
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => reject(tx.error);
+                });
+            } catch (e) {
+                console.warn('Aviso IndexedDB:', e);
+                return false;
+            }
+        }
+
+        async function lerDoIndexedDB() {
+            try {
+                const db = await abrirIndexedDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.get('backup_principal');
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => reject(req.error);
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function atualizarSeloPersistencia(horaCustom = null) {
+            const elTexto = document.getElementById('texto-persistencia');
+            if (!elTexto) return;
+            const agora = horaCustom ? new Date(horaCustom) : new Date();
+            const horaFmt = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            elTexto.textContent = `Dados salvos automaticamente no aparelho • ${horaFmt}`;
+        }
+
+        // Inicialização Assíncrona garantindo recuperação total dos dados
+        document.addEventListener('DOMContentLoaded', async () => {
+            await carregarDados();
+            iniciarRelogio();
+            definirDataHojeGasto();
+            configurarFormularios();
+            atualizarTudo();
+            lucide.createIcons();
+        });
+
+        async function carregarDados() {
+            let lsLavagens = [];
+            let lsGastos = [];
+            let temLocalStorage = false;
+
+            try {
+                const rawLav = localStorage.getItem(KEY_LAVAGENS);
+                const rawGas = localStorage.getItem(KEY_GASTOS);
+                if (rawLav !== null || rawGas !== null) {
+                    lsLavagens = JSON.parse(rawLav) || [];
+                    lsGastos = JSON.parse(rawGas) || [];
+                    temLocalStorage = true;
+                }
+            } catch (e) {
+                console.warn('Falha ao ler localStorage:', e);
+            }
+
+            // Lê também do IndexedDB para fallback ou sincronização
+            const idbDados = await lerDoIndexedDB();
+
+            if (temLocalStorage && (lsLavagens.length > 0 || lsGastos.length > 0)) {
+                lavagens = lsLavagens;
+                gastos = lsGastos;
+                // Mantém IndexedDB espelhado
+                await salvarNoIndexedDB({ lavagens, gastos, atualizadoEm: new Date().toISOString() });
+                atualizarSeloPersistencia(idbDados?.atualizadoEm);
+            } else if (idbDados && (Array.isArray(idbDados.lavagens) || Array.isArray(idbDados.gastos))) {
+                // Recupera do IndexedDB caso o localStorage tenha sido limpo pelo navegador
+                lavagens = idbDados.lavagens || [];
+                gastos = idbDados.gastos || [];
+                try {
+                    localStorage.setItem(KEY_LAVAGENS, JSON.stringify(lavagens));
+                    localStorage.setItem(KEY_GASTOS, JSON.stringify(gastos));
+                } catch (e) {}
+                atualizarSeloPersistencia(idbDados.atualizadoEm);
+            } else {
+                lavagens = lsLavagens;
+                gastos = lsGastos;
+                atualizarSeloPersistencia();
+            }
+        }
+
+        async function salvarDados() {
+            const agoraIso = new Date().toISOString();
+            try {
+                localStorage.setItem(KEY_LAVAGENS, JSON.stringify(lavagens));
+                localStorage.setItem(KEY_GASTOS, JSON.stringify(gastos));
+            } catch (e) {
+                console.warn('Erro ao gravar no localStorage:', e);
+            }
+            await salvarNoIndexedDB({ lavagens, gastos, atualizadoEm: agoraIso });
+            atualizarSeloPersistencia(agoraIso);
+        }
+
+        // Relógio automático em tempo real
+        function iniciarRelogio() {
+            const atualizar = () => {
+                const agora = new Date();
+                const texto = agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const elLive = document.getElementById('timestamp-ao-vivo');
+                const elMob = document.getElementById('relogio-mobile');
+                if (elLive) elLive.textContent = texto;
+                if (elMob) elMob.textContent = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            };
+            atualizar();
+            setInterval(atualizar, 1000);
+        }
+
+        function definirDataHojeGasto() {
+            const hoje = new Date();
+            const iso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+            document.getElementById('gasto-data').value = iso;
+        }
+
+        // Navegação entre abas
+        function mudarAba(aba) {
+            ['visao-geral', 'nova-lavagem', 'fidelidade', 'gastos'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${id}`);
+                btn.className = 'tab-btn flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all whitespace-nowrap';
+            });
+
+            document.getElementById(`view-${aba}`).classList.remove('hidden');
+            const ativo = document.getElementById(`tab-${aba}`);
+            ativo.className = 'tab-btn flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap bg-cyan-500 text-slate-950 shadow';
+
+            if (aba === 'visao-geral') atualizarDashboard();
+            if (aba === 'fidelidade') renderizarClientesFidelidade();
+            if (aba === 'gastos') renderizarTabelaGastos();
+            lucide.createIcons();
+        }
+
+        // Formatação automática de placa (ex: ABC-1234 ou ABC-1D23)
+        function formatarPlacaInput(input) {
+            let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (val.length > 3) {
+                val = val.slice(0, 3) + '-' + val.slice(3, 7);
+            }
+            input.value = val;
+        }
+
+        // Lógica de Cálculo de Preços (Regras exatas do usuário)
+        function selecionarVeiculo(tipo) {
+            veiculoAtual = tipo;
+            resgateGratisAtivo = false;
+
+            const btnMoto = document.getElementById('btn-veiculo-moto');
+            const btnCarro = document.getElementById('btn-veiculo-carro');
+            const boxDesmontagem = document.getElementById('box-opcao-desmontagem');
+            const boxAspiracao = document.getElementById('box-opcao-aspiracao');
+
+            document.getElementById('chk-revitalizacao').checked = false;
+            document.getElementById('chk-desmontagem').checked = false;
+            document.getElementById('chk-aspiracao').checked = false;
+
+            if (tipo === 'moto') {
+                btnMoto.className = 'flex items-center justify-center gap-2.5 p-3.5 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-white font-semibold transition-all';
+                btnCarro.className = 'flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white font-semibold transition-all';
+                boxDesmontagem.classList.remove('hidden');
+                boxAspiracao.classList.add('hidden');
+
+                document.getElementById('preco-base-label').textContent = 'R$ 20,00';
+                document.getElementById('desc-revitalizacao').textContent = 'Lavagem Simples + Revitalização = R$ 25,00';
+                document.getElementById('badge-revitalizacao').textContent = '+ R$ 5,00';
+            } else {
+                btnCarro.className = 'flex items-center justify-center gap-2.5 p-3.5 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-white font-semibold transition-all';
+                btnMoto.className = 'flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-400 hover:text-white font-semibold transition-all';
+                boxDesmontagem.classList.add('hidden');
+                boxAspiracao.classList.remove('hidden');
+
+                document.getElementById('preco-base-label').textContent = 'R$ 30,00';
+                document.getElementById('desc-revitalizacao').textContent = 'Lavagem Simples + Revitalização = R$ 40,00';
+                document.getElementById('badge-revitalizacao').textContent = '+ R$ 10,00';
+            }
+
+            calcularPrecoLavagem();
+            lucide.createIcons();
+        }
+
+        function aplicarPacoteRapido(tipo, revit, desmont, aspir) {
+            selecionarVeiculo(tipo);
+            document.getElementById('chk-revitalizacao').checked = revit;
+            document.getElementById('chk-desmontagem').checked = desmont;
+            document.getElementById('chk-aspiracao').checked = aspir;
+            calcularPrecoLavagem();
+        }
+
+        function calcularPrecoLavagem() {
+            const revit = document.getElementById('chk-revitalizacao').checked;
+            const desmont = document.getElementById('chk-desmontagem').checked;
+            const aspir = document.getElementById('chk-aspiracao').checked;
+            const inputDesconto = document.getElementById('lav-desconto');
+            let desconto = parseFloat(inputDesconto ? inputDesconto.value : 0) || 0;
+            if (desconto < 0) desconto = 0;
+
+            let subtotal = 0;
+            let servicos = ['Lavagem Simples (Pré-lavagem, esfregação, cera e pretinho)'];
+
+            if (veiculoAtual === 'moto') {
+                subtotal = 20;
+                if (revit) {
+                    subtotal += 5; // R$ 25
+                    servicos.push('Revitalização de Plásticos');
+                }
+                if (desmont) {
+                    subtotal += 15; // Simples + Desmontagem = 35; Com revit = 40
+                    servicos.push('Desmontagem');
+                }
+            } else {
+                subtotal = 30;
+                if (revit) {
+                    subtotal += 10; // R$ 40
+                    servicos.push('Revitalização de Plásticos');
+                }
+                if (aspir) {
+                    // Se o cliente escolher aspiração interna em carro, total é R$ 50
+                    subtotal = 50;
+                    if (!revit) {
+                        document.getElementById('chk-revitalizacao').checked = true;
+                        servicos.push('Revitalização de Plásticos');
+                    }
+                    servicos.push('Aspiração Interna');
+                }
+            }
+
+            const avisoResgate = document.getElementById('aviso-resgate-ativo');
+            const elSubtotalRiscado = document.getElementById('subtotal-riscado');
+            const elTagDesconto = document.getElementById('tag-desconto-aplicado');
+
+            let preco = subtotal;
+            let descontoAplicado = 0;
+
+            if (resgateGratisAtivo) {
+                preco = 0;
+                avisoResgate.classList.remove('hidden');
+                elSubtotalRiscado.textContent = formatarMoeda(subtotal);
+                elSubtotalRiscado.classList.remove('hidden');
+                elTagDesconto.classList.add('hidden');
+            } else {
+                avisoResgate.classList.add('hidden');
+                descontoAplicado = Math.min(desconto, subtotal);
+                preco = Math.max(0, subtotal - descontoAplicado);
+
+                if (descontoAplicado > 0) {
+                    elSubtotalRiscado.textContent = formatarMoeda(subtotal);
+                    elSubtotalRiscado.classList.remove('hidden');
+                    elTagDesconto.textContent = `Desconto: - ${formatarMoeda(descontoAplicado)}`;
+                    elTagDesconto.classList.remove('hidden');
+                } else {
+                    elSubtotalRiscado.classList.add('hidden');
+                    elTagDesconto.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('resumo-servico-texto').textContent = `${veiculoAtual.toUpperCase()} • ${servicos.join(' + ')}`;
+            document.getElementById('valor-final-lavagem').textContent = formatarMoeda(preco);
+
+            return { subtotal, desconto: descontoAplicado, preco, servicos };
+        }
+
+        // =====================================================================
+        // PROGRAMA DE FIDELIDADE (A CADA 5 LAVAGENS PAGAS, GANHA 1 GRÁTIS)
+        // =====================================================================
+        function obterResumoClientes() {
+            const mapa = {};
+
+            // Ordena cronologicamente do mais antigo ao mais novo para calcular ciclos de 5 corretamente
+            const ordenadas = [...lavagens].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            ordenadas.forEach(lav => {
+                const chave = lav.cliente.trim().toLowerCase();
+                if (!mapa[chave]) {
+                    mapa[chave] = {
+                        nome: lav.cliente.trim(),
+                        placas: new Set(),
+                        totalLavagens: 0,
+                        lavagensPagasNoCiclo: 0,
+                        gratisDisponiveis: 0,
+                        gratisResgatadas: 0,
+                        ultimaData: lav.timestamp
+                    };
+                }
+
+                const c = mapa[chave];
+                c.nome = lav.cliente.trim();
+                if (lav.placa) c.placas.add(lav.placa.toUpperCase());
+                c.totalLavagens += 1;
+                c.ultimaData = lav.timestamp;
+
+                if (lav.isGratis) {
+                    c.gratisResgatadas += 1;
+                    if (c.gratisDisponiveis > 0) c.gratisDisponiveis -= 1;
+                    c.lavagensPagasNoCiclo = 0;
+                } else {
+                    c.lavagensPagasNoCiclo += 1;
+                    if (c.lavagensPagasNoCiclo >= 5) {
+                        c.gratisDisponiveis += 1;
+                        c.lavagensPagasNoCiclo = 0;
+                    }
+                }
+            });
+
+            return Object.values(mapa);
+        }
+
+        function buscarClientePorNomeOuPlaca(nomeInput, placaInput) {
+            const clientes = obterResumoClientes();
+            const n = nomeInput.trim().toLowerCase();
+            const p = placaInput.trim().toUpperCase();
+
+            if (!n && !p) return null;
+
+            return clientes.find(c =>
+                (n && c.nome.toLowerCase() === n) ||
+                (p && p.length >= 7 && c.placas.has(p))
+            ) || null;
+        }
+
+        function verificarFidelidadeAoDigitar() {
+            const nome = document.getElementById('lav-cliente').value;
+            const placa = document.getElementById('lav-placa').value;
+            const card = document.getElementById('card-status-fidelidade');
+            const btnResgate = document.getElementById('btn-resgatar-gratis');
+
+            const cliente = buscarClientePorNomeOuPlaca(nome, placa);
+
+            if (!cliente) {
+                card.classList.add('hidden');
+                btnResgate.classList.add('hidden');
+                resgateGratisAtivo = false;
+                calcularPrecoLavagem();
+                return;
+            }
+
+            // Preenche automaticamente nome ou placa se um deles estiver vazio
+            if (!nome.trim() && cliente.nome) {
+                document.getElementById('lav-cliente').value = cliente.nome;
+            }
+            if (!placa.trim() && cliente.placas.size > 0) {
+                document.getElementById('lav-placa').value = Array.from(cliente.placas)[0];
+            }
+
+            card.classList.remove('hidden');
+
+            if (cliente.gratisDisponiveis > 0) {
+                card.className = 'rounded-2xl p-4 border border-amber-500/50 bg-gradient-to-r from-amber-500/15 to-emerald-500/10 space-y-2';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                            <i data-lucide="party-popper" class="w-4 h-4"></i>
+                            🎉 CLIENTE GANHOU 1 LAVAGEM GRÁTIS!
+                        </span>
+                        <span class="text-xs font-bold bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-full">5/5 Concluídas</span>
+                    </div>
+                    <p class="text-xs text-slate-200">
+                        <strong>${escapeHTML(cliente.nome)}</strong> completou 5 lavagens pagas! Clique no botão dourado abaixo para aplicar o prêmio grátis (R$ 0,00).
+                    </p>
+                `;
+                btnResgate.classList.remove('hidden');
+            } else {
+                resgateGratisAtivo = false;
+                btnResgate.classList.add('hidden');
+                const faltam = 5 - cliente.lavagensPagasNoCiclo;
+                const pct = (cliente.lavagensPagasNoCiclo / 5) * 100;
+
+                card.className = 'rounded-2xl p-4 border border-cyan-500/30 bg-slate-950 space-y-2';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-semibold text-cyan-300">Cartão Fidelidade: ${escapeHTML(cliente.nome)}</span>
+                        <span class="font-bold text-white">${cliente.lavagensPagasNoCiclo} de 5 lavagens</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-2 rounded-full transition-all" style="width: ${pct}%"></div>
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        ${faltam === 1 ? 'Após esta lavagem paga, a próxima será GRÁTIS!' : `Faltam ${faltam} lavagens para ganhar 1 grátis.`}
+                    </p>
+                `;
+            }
+
+            calcularPrecoLavagem();
+            lucide.createIcons();
+        }
+
+        function alternarResgateGratis() {
+            resgateGratisAtivo = !resgateGratisAtivo;
+            const textoBtn = document.getElementById('texto-btn-resgate');
+            textoBtn.textContent = resgateGratisAtivo
+                ? 'Cancelar Resgate (Cobrar Normal)'
+                : 'Resgatar Lavagem Grátis (R$ 0,00)';
+            calcularPrecoLavagem();
+        }
+
+        // =====================================================================
+        // REGISTRO DE LAVAGENS E GASTOS
+        // =====================================================================
+        function configurarFormularios() {
+            // Submit Lavagem
+            document.getElementById('form-lavagem').addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const cliente = document.getElementById('lav-cliente').value.trim();
+                const placa = document.getElementById('lav-placa').value.trim().toUpperCase();
+                if (!cliente || !placa) return;
+
+                const { subtotal, desconto, preco, servicos } = calcularPrecoLavagem();
+                const obsDesconto = document.getElementById('lav-obs-desconto').value.trim();
+                const agora = new Date();
+
+                const novaLavagem = {
+                    id: Date.now().toString(),
+                    cliente,
+                    placa,
+                    veiculo: veiculoAtual,
+                    servicos: servicos.join(' + '),
+                    valorOriginal: subtotal,
+                    desconto,
+                    obsDesconto,
+                    valor: preco,
+                    isGratis: resgateGratisAtivo,
+                    timestamp: agora.toISOString()
+                };
+
+                lavagens.unshift(novaLavagem);
+                salvarDados();
+
+                // Reset formulário
+                document.getElementById('lav-cliente').value = '';
+                document.getElementById('lav-placa').value = '';
+                document.getElementById('lav-desconto').value = '';
+                document.getElementById('lav-obs-desconto').value = '';
+                document.getElementById('card-status-fidelidade').classList.add('hidden');
+                document.getElementById('btn-resgatar-gratis').classList.add('hidden');
+                resgateGratisAtivo = false;
+                selecionarVeiculo('moto');
+
+                atualizarTudo();
+                mostrarComprovanteLavagem(novaLavagem);
+            });
+
+            // Submit Gasto
+            document.getElementById('form-gasto').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const descricao = document.getElementById('gasto-descricao').value.trim();
+                const categoria = document.getElementById('gasto-categoria').value;
+                const valor = parseFloat(document.getElementById('gasto-valor').value);
+                const data = document.getElementById('gasto-data').value;
+
+                if (!descricao || isNaN(valor) || valor <= 0 || !data) return;
+
+                gastos.unshift({
+                    id: Date.now().toString(),
+                    descricao,
+                    categoria,
+                    valor,
+                    data
+                });
+
+                salvarDados();
+                document.getElementById('gasto-descricao').value = '';
+                document.getElementById('gasto-valor').value = '';
+                atualizarTudo();
+                mostrarToast('Despesa registrada com sucesso!');
+            });
+        }
+
+        function mostrarComprovanteLavagem(lav) {
+            const dt = new Date(lav.timestamp);
+            const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const temDesconto = !lav.isGratis && lav.desconto > 0;
+
+            const clienteResumo = buscarClientePorNomeOuPlaca(lav.cliente, lav.placa);
+            const textoFidelidade = clienteResumo
+                ? (clienteResumo.gratisDisponiveis > 0
+                    ? '🎉 Você completou 5 lavagens e ganhou 1 LAVAGEM GRÁTIS!'
+                    : `⭐ Cartão Fidelidade: ${clienteResumo.lavagensPagasNoCiclo}/5 lavagens`)
+                : '';
+
+            const textoWhats = `*COMPROVANTE DE LAVAGEM - DETAILCONTROL*\n` +
+                `📅 Data/Hora: ${dataFmt}\n` +
+                `👤 Cliente: ${lav.cliente}\n` +
+                `🚘 Veículo: ${lav.veiculo.toUpperCase()} (${lav.placa})\n` +
+                `✨ Serviços: ${lav.servicos}\n` +
+                (temDesconto ? `🏷️ Desconto: - ${formatarMoeda(lav.desconto)}${lav.obsDesconto ? ` (${lav.obsDesconto})` : ''}\n` : '') +
+                `💰 Total Pago: ${lav.isGratis ? 'GRÁTIS (Prêmio Fidelidade!)' : formatarMoeda(lav.valor)}\n` +
+                (textoFidelidade ? `\n${textoFidelidade}` : '');
+
+            const urlWhats = `https://wa.me/?text=${encodeURIComponent(textoWhats)}`;
+
+            document.getElementById('modal-titulo').textContent = 'Lavagem Registrada!';
+            document.getElementById('modal-corpo').innerHTML = `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 text-xs">
+                    <p><span class="text-slate-400">Data/Hora:</span> <strong class="text-white">${dataFmt}</strong></p>
+                    <p><span class="text-slate-400">Cliente:</span> <strong class="text-white">${escapeHTML(lav.cliente)}</strong> (${lav.placa})</p>
+                    <p><span class="text-slate-400">Serviços:</span> <span class="text-slate-200">${escapeHTML(lav.servicos)}</span></p>
+                    ${temDesconto ? `<p><span class="text-slate-400">Desconto aplicado:</span> <strong class="text-rose-400">- ${formatarMoeda(lav.desconto)}</strong> ${lav.obsDesconto ? `<span class="text-slate-500">(${escapeHTML(lav.obsDesconto)})</span>` : ''}</p>` : ''}
+                    <p><span class="text-slate-400">Total:</span> <strong class="text-emerald-400 text-sm">${lav.isGratis ? 'R$ 0,00 (Fidelidade)' : formatarMoeda(lav.valor)}</strong></p>
+                    ${textoFidelidade ? `<p class="pt-1 text-amber-300 font-medium">${textoFidelidade}</p>` : ''}
+                </div>
+            `;
+            document.getElementById('modal-rodape').innerHTML = `
+                <button onclick="fecharModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300">Fechar</button>
+                <a href="${urlWhats}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white">
+                    <i data-lucide="share-2" class="w-4 h-4"></i> Enviar no WhatsApp
+                </a>
+            `;
+            abrirModal();
+            lucide.createIcons();
+        }
+
+        // =====================================================================
+        // ATUALIZAÇÃO DE DASHBOARD, TABELAS E GRÁFICOS
+        // =====================================================================
+        function atualizarTudo() {
+            atualizarAutocompleteClientes();
+            atualizarDashboard();
+            renderizarClientesFidelidade();
+            renderizarTabelaGastos();
+        }
+
+        function atualizarAutocompleteClientes() {
+            const clientes = obterResumoClientes();
+            const datalist = document.getElementById('lista-clientes-autocomplete');
+            if (datalist) {
+                datalist.innerHTML = clientes.map(c => `<option value="${escapeHTML(c.nome)}">`).join('');
+            }
+            const datalistPlacas = document.getElementById('lista-placas-autocomplete');
+            if (datalistPlacas) {
+                const placasUnicas = new Set();
+                clientes.forEach(c => c.placas.forEach(p => placasUnicas.add(p)));
+                datalistPlacas.innerHTML = Array.from(placasUnicas).map(p => `<option value="${escapeHTML(p)}">`).join('');
+            }
+        }
+
+        function alterarPeriodoDashboard(periodo) {
+            periodoDashboard = periodo;
+            ['hoje', 'mes', 'todos'].forEach(p => {
+                const btn = document.getElementById(`btn-periodo-${p}`);
+                btn.className = p === periodo
+                    ? 'periodo-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-cyan-400 transition-all'
+                    : 'periodo-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all';
+            });
+            atualizarDashboard();
+        }
+
+        function filtrarPorPeriodo(lista, campoData, isTimestamp = false) {
+            const agora = new Date();
+            const hojeStr = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}`;
+            const mesStr = hojeStr.slice(0, 7);
+
+            return lista.filter(item => {
+                const dataItem = isTimestamp ? item[campoData].slice(0, 10) : item[campoData];
+                if (periodoDashboard === 'hoje') return dataItem === hojeStr;
+                if (periodoDashboard === 'mes') return dataItem.startsWith(mesStr);
+                return true;
+            });
+        }
+
+        function atualizarDashboard() {
+            const lavFiltradas = filtrarPorPeriodo(lavagens, 'timestamp', true);
+            const gasFiltrados = filtrarPorPeriodo(gastos, 'data', false);
+
+            const faturamento = lavFiltradas.reduce((acc, l) => acc + l.valor, 0);
+            const totalGastos = gasFiltrados.reduce((acc, g) => acc + g.valor, 0);
+            const lucro = faturamento - totalGastos;
+            const qtdGratis = lavFiltradas.filter(l => l.isGratis).length;
+
+            document.getElementById('dash-faturamento').textContent = formatarMoeda(faturamento);
+            document.getElementById('dash-gastos').textContent = formatarMoeda(totalGastos);
+
+            const elLucro = document.getElementById('dash-lucro');
+            elLucro.textContent = formatarMoeda(lucro);
+            elLucro.className = `text-2xl sm:text-3xl font-bold mt-2 ${lucro >= 0 ? 'text-cyan-400' : 'text-rose-400'}`;
+
+            document.getElementById('dash-qtd-lavagens').textContent = lavFiltradas.length;
+            document.getElementById('dash-qtd-gratis').textContent = `${qtdGratis} resgate(s) de fidelidade`;
+
+            renderizarTabelaLavagensRecentes(lavFiltradas);
+            renderizarGraficos(faturamento, totalGastos, gasFiltrados);
+        }
+
+        function renderizarTabelaLavagensRecentes(lista) {
+            const tbody = document.getElementById('tabela-lavagens-recentes');
+            const vazio = document.getElementById('vazio-lavagens');
+
+            if (lista.length === 0) {
+                tbody.innerHTML = '';
+                vazio.classList.remove('hidden');
+                return;
+            }
+
+            vazio.classList.add('hidden');
+            tbody.innerHTML = lista.map(lav => {
+                const dt = new Date(lav.timestamp);
+                const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="py-3 px-5 text-xs font-mono text-slate-400 whitespace-nowrap">${dataFmt}</td>
+                        <td class="py-3 px-5">
+                            <p class="font-semibold text-white">${escapeHTML(lav.cliente)}</p>
+                            <span class="text-xs font-mono bg-slate-800 text-cyan-300 px-2 py-0.5 rounded">${escapeHTML(lav.placa)}</span>
+                        </td>
+                        <td class="py-3 px-5">
+                            <span class="text-xs font-bold uppercase ${lav.veiculo === 'moto' ? 'text-cyan-400' : 'text-amber-400'}">${lav.veiculo}</span>
+                            <p class="text-xs text-slate-300">${escapeHTML(lav.servicos)}</p>
+                            ${!lav.isGratis && lav.desconto > 0 ? `<p class="text-xs text-rose-400 mt-0.5">Desconto: - ${formatarMoeda(lav.desconto)}${lav.obsDesconto ? ` (${escapeHTML(lav.obsDesconto)})` : ''}</p>` : ''}
+                        </td>
+                        <td class="py-3 px-5 text-right whitespace-nowrap">
+                            ${lav.isGratis
+                                ? '<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">GRÁTIS (Fidelidade)</span>'
+                                : `${lav.desconto > 0 ? `<span class="block text-xs text-slate-500 line-through">${formatarMoeda(lav.valorOriginal || (lav.valor + lav.desconto))}</span>` : ''}<span class="font-bold text-emerald-400">${formatarMoeda(lav.valor)}</span>`
+                            }
+                        </td>
+                        <td class="py-3 px-5 text-center whitespace-nowrap">
+                            <button onclick="excluirLavagem('${lav.id}')" title="Excluir registro" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderizarClientesFidelidade() {
+            const busca = document.getElementById('busca-fidelidade').value.toLowerCase();
+            const clientes = obterResumoClientes().filter(c =>
+                c.nome.toLowerCase().includes(busca) ||
+                Array.from(c.placas).some(p => p.toLowerCase().includes(busca))
+            );
+
+            const grid = document.getElementById('grid-clientes-fidelidade');
+            const vazio = document.getElementById('vazio-fidelidade');
+
+            if (clientes.length === 0) {
+                grid.innerHTML = '';
+                vazio.classList.remove('hidden');
+                return;
+            }
+
+            vazio.classList.add('hidden');
+            grid.innerHTML = clientes.map(c => {
+                const placasArr = Array.from(c.placas);
+                const temGratis = c.gratisDisponiveis > 0;
+                const selos = [1, 2, 3, 4, 5].map(num => {
+                    const ativo = temGratis || num <= c.lavagensPagasNoCiclo;
+                    return `<div class="h-8 rounded-lg flex items-center justify-center text-xs font-bold border ${ativo ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-600'}">${num}</div>`;
+                }).join('');
+
+                return `
+                    <div class="bg-slate-950 border ${temGratis ? 'border-amber-500/60' : 'border-slate-800'} rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <div>
+                                    <h3 class="font-bold text-white text-base">${escapeHTML(c.nome)}</h3>
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        ${placasArr.map(p => `<span class="text-xs font-mono bg-slate-900 border border-slate-700 text-cyan-300 px-2 py-0.5 rounded">${p}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <span class="text-xs text-slate-400 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
+                                    Total: <strong class="text-white">${c.totalLavagens}</strong>
+                                </span>
+                            </div>
+
+                            ${temGratis ? `
+                                <div class="mt-3 p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-2">
+                                    <i data-lucide="gift" class="w-4 h-4 shrink-0"></i>
+                                    <span>Lavagem Grátis Disponível!</span>
+                                </div>
+                            ` : `
+                                <p class="text-xs text-slate-400 mt-3">Progresso do ciclo atual: <strong class="text-white">${c.lavagensPagasNoCiclo}/5</strong></p>
+                            `}
+
+                            <div class="grid grid-cols-5 gap-1.5 mt-2.5">${selos}</div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                            <span class="text-xs text-slate-500">Prêmios resgatados: ${c.gratisResgatadas}</span>
+                            <button onclick="iniciarLavagemParaCliente('${escapeHTML(c.nome)}', '${placasArr[0] || ''}')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-slate-950 border border-cyan-500/30 transition-all">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Lavar Agora
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function iniciarLavagemParaCliente(nome, placa) {
+            mudarAba('nova-lavagem');
+            document.getElementById('lav-cliente').value = nome;
+            document.getElementById('lav-placa').value = placa;
+            verificarFidelidadeAoDigitar();
+        }
+
+        function renderizarTabelaGastos() {
+            const cat = document.getElementById('filtro-gasto-categoria').value;
+            const lista = gastos.filter(g => cat === 'TODAS' || g.categoria === cat);
+            const tbody = document.getElementById('tabela-gastos');
+            const vazio = document.getElementById('vazio-gastos');
+
+            if (lista.length === 0) {
+                tbody.innerHTML = '';
+                vazio.classList.remove('hidden');
+                return;
+            }
+
+            vazio.classList.add('hidden');
+            tbody.innerHTML = lista.map(g => {
+                const [ano, mes, dia] = g.data.split('-');
+                return `
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="py-3 px-5 text-slate-400 text-xs">${dia}/${mes}/${ano}</td>
+                        <td class="py-3 px-5 font-medium text-white">${escapeHTML(g.descricao)}</td>
+                        <td class="py-3 px-5 text-xs text-slate-300">${escapeHTML(g.categoria)}</td>
+                        <td class="py-3 px-5 text-right font-bold text-rose-400">${formatarMoeda(g.valor)}</td>
+                        <td class="py-3 px-5 text-center">
+                            <button onclick="excluirGasto('${g.id}')" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderizarGraficos(faturamento, totalGastos, gasFiltrados) {
+            // Gráfico 1: Barras Receitas vs Gastos
+            const ctx1 = document.getElementById('graficoReceitaGasto');
+            if (chartReceitaGasto) chartReceitaGasto.destroy();
+
+            chartReceitaGasto = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Faturamento (Lavagens)', 'Gastos (Despesas)', 'Lucro Líquido'],
+                    datasets: [{
+                        data: [faturamento, totalGastos, Math.max(0, faturamento - totalGastos)],
+                        backgroundColor: ['#10b981', '#f43f5e', '#06b6d4'],
+                        borderRadius: 10,
+                        barThickness: 48
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                        x: { ticks: { color: '#cbd5e1' }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // Gráfico 2: Rosca Categorias de Gastos
+            const ctx2 = document.getElementById('graficoCategorias');
+            const msgVazio = document.getElementById('msg-sem-gastos-grafico');
+
+            if (gasFiltrados.length === 0) {
+                ctx2.classList.add('hidden');
+                msgVazio.classList.remove('hidden');
+                if (chartCategorias) chartCategorias.destroy();
+                return;
+            }
+
+            ctx2.classList.remove('hidden');
+            msgVazio.classList.add('hidden');
+
+            const agrupado = {};
+            gasFiltrados.forEach(g => {
+                agrupado[g.categoria] = (agrupado[g.categoria] || 0) + g.valor;
+            });
+
+            if (chartCategorias) chartCategorias.destroy();
+            chartCategorias = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(agrupado),
+                    datasets: [{
+                        data: Object.values(agrupado),
+                        backgroundColor: Object.keys(agrupado).map(c => CORES_GASTOS[c] || '#64748b'),
+                        borderColor: '#0f172a',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // Exclusões
+        function excluirLavagem(id) {
+            lavagens = lavagens.filter(l => l.id !== id);
+            salvarDados();
+            atualizarTudo();
+            mostrarToast('Registro de lavagem removido.');
+        }
+
+        function excluirGasto(id) {
+            gastos = gastos.filter(g => g.id !== id);
+            salvarDados();
+            atualizarTudo();
+            mostrarToast('Despesa removida.');
+        }
+
+        // Backup JSON (Exportar / Importar)
+        function exportarBackupJSON() {
+            const payload = { versao: 2, exportadoEm: new Date().toISOString(), lavagens, gastos };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_estetica_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            mostrarToast('Backup exportado com sucesso!');
+        }
+
+        function importarBackupJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if (Array.isArray(dados.lavagens) && Array.isArray(dados.gastos)) {
+                        lavagens = dados.lavagens;
+                        gastos = dados.gastos;
+                        salvarDados();
+                        atualizarTudo();
+                        mostrarToast('Backup restaurado com sucesso!');
+                    }
+                } catch (err) {
+                    mostrarToast('Arquivo de backup inválido.', 'erro');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Modal e Toast
+        function abrirModal() {
+            const m = document.getElementById('modal-geral');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function fecharModal() {
+            const m = document.getElementById('modal-geral');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        let toastTimer;
+        function mostrarToast(msg, tipo = 'ok') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function formatarMoeda(v) {
+            return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t]));
+        }
+    </script>
+</body>
+</html>
