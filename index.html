@@ -110,7 +110,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 border border-slate-800 p-4 rounded-2xl">
                 <div>
                     <h2 class="text-base sm:text-lg font-bold text-white">Resumo Financeiro & Operacional</h2>
-                    <p class="text-xs text-slate-400">Acompanhe faturamento de lavagens, despesas e lucro real</p>
+                    <p class="text-xs text-slate-400">Acompanhe faturamento de lavagens, PIX/Dinheiro, despesas e lucro real</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                     <div class="inline-flex bg-slate-950 p-1 rounded-xl border border-slate-800">
@@ -136,14 +136,15 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Faturamento (Lavagens)</p>
+                            <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Faturamento Recebido</p>
                             <h3 id="dash-faturamento" class="text-2xl sm:text-3xl font-bold text-emerald-400 mt-2">R$ 0,00</h3>
                         </div>
                         <div class="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400">
                             <i data-lucide="trending-up" class="w-5 h-5"></i>
                         </div>
                     </div>
-                    <p id="dash-faturamento-sub" class="text-xs text-slate-500 mt-3">Entradas no período</p>
+                    <p id="dash-faturamento-sub" class="text-xs text-slate-500 mt-2.5">Tudo recebido no período</p>
+                    <p id="dash-faturamento-meios" class="text-[11px] text-slate-400 mt-1">PIX: R$ 0,00 • Dinheiro: R$ 0,00</p>
                 </div>
 
                 <!-- Gastos da Estética -->
@@ -171,7 +172,7 @@
                             <i data-lucide="dollar-sign" class="w-5 h-5"></i>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-500 mt-3">Faturamento menos gastos</p>
+                    <p class="text-xs text-slate-500 mt-3">Recebido menos gastos</p>
                 </div>
 
                 <!-- Lavagens Realizadas -->
@@ -224,12 +225,20 @@
                 <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                         <h3 class="text-base font-semibold text-white">Histórico Recente de Lavagens</h3>
-                        <p class="text-xs text-slate-400">Registros com data, hora automática, placa e status de fidelidade</p>
+                        <p class="text-xs text-slate-400">Clique nas tags de status ou forma de pagamento para alternar rapidamente</p>
                     </div>
-                    <button onclick="mudarAba('nova-lavagem')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>Registrar Nova Lavagem</span>
-                    </button>
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <select id="filtro-status-lavagem" onchange="atualizarDashboard()"
+                            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+                            <option value="TODOS">Todos os Pagamentos</option>
+                            <option value="pago">Somente Pagos</option>
+                            <option value="em_aberto">Somente Em Aberto</option>
+                        </select>
+                        <button onclick="mudarAba('nova-lavagem')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Registrar Nova Lavagem</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -238,6 +247,7 @@
                                 <th class="py-3 px-5 font-medium">Data / Hora</th>
                                 <th class="py-3 px-5 font-medium">Cliente & Placa</th>
                                 <th class="py-3 px-5 font-medium">Veículo & Serviços</th>
+                                <th class="py-3 px-5 font-medium text-center">Pagamento</th>
                                 <th class="py-3 px-5 font-medium text-right">Valor</th>
                                 <th class="py-3 px-5 font-medium text-center">Ações</th>
                             </tr>
@@ -370,22 +380,40 @@
                         </div>
                     </div>
 
-                    <!-- Resumo do Valor Final e Botão de Resgate Fidelidade -->
+                    <!-- Resumo do Valor Final, Pagamento (Pago/Em Aberto & PIX/Dinheiro) e Desconto -->
                     <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-4">
-                        <!-- Status do Pagamento (Pago ou Em Aberto) -->
-                        <div id="box-status-pagamento" class="pb-3 border-b border-slate-800/80">
-                            <label class="block text-xs font-medium text-slate-300 mb-2">Status do Pagamento *</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button type="button" id="btn-status-pago" onclick="selecionarStatusPagamento('pago')"
-                                    class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 text-xs sm:text-sm font-bold transition-all">
-                                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                                    <span>Pago</span>
-                                </button>
-                                <button type="button" id="btn-status-aberto" onclick="selecionarStatusPagamento('em_aberto')"
-                                    class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all">
-                                    <i data-lucide="clock" class="w-4 h-4"></i>
-                                    <span>Em Aberto</span>
-                                </button>
+                        <!-- Status e Forma de Pagamento -->
+                        <div id="box-status-pagamento" class="pb-3 border-b border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-2">Status do Pagamento *</label>
+                                <div class="grid grid-cols-2 gap-2.5">
+                                    <button type="button" id="btn-status-pago" onclick="selecionarStatusPagamento('pago')"
+                                        class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 text-xs sm:text-sm font-bold transition-all">
+                                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                                        <span>Pago</span>
+                                    </button>
+                                    <button type="button" id="btn-status-aberto" onclick="selecionarStatusPagamento('em_aberto')"
+                                        class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all">
+                                        <i data-lucide="clock" class="w-4 h-4"></i>
+                                        <span>Em Aberto</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-2">Forma de Pagamento *</label>
+                                <div class="grid grid-cols-2 gap-2.5">
+                                    <button type="button" id="btn-forma-pix" onclick="selecionarFormaPagamento('pix')"
+                                        class="flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-cyan-500 bg-cyan-500/15 text-cyan-300 text-xs sm:text-sm font-bold transition-all">
+                                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                                        <span>PIX</span>
+                                    </button>
+                                    <button type="button" id="btn-forma-dinheiro" onclick="selecionarFormaPagamento('dinheiro')"
+                                        class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all">
+                                        <i data-lucide="banknote" class="w-4 h-4"></i>
+                                        <span>Dinheiro</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -629,59 +657,6 @@
                             Salvar
                         </button>
                     </div>
-            <!-- Últimas Lavagens Realizadas -->
-            <section class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-                <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Histórico Recente de Lavagens</h3>
-                        <p class="text-xs text-slate-400">Registros com data, hora automática, placa e status de pagamento</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                        <select id="filtro-status-lavagem" onchange="atualizarDashboard()"
-                            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
-                            <option value="TODOS">Todos os Pagamentos</option>
-                            <option value="pago">Somente Pagos</option>
-                            <option value="em_aberto">Somente Em Aberto</option>
-                        </select>
-                        <button onclick="mudarAba('nova-lavagem')" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            <span>Registrar Nova Lavagem</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-950/60 border-b border-slate-800 text-xs uppercase tracking-wider text-slate-400">
-                                <th class="py-3 px-5 font-medium">Data / Hora</th>
-                                <th class="py-3 px-5 font-medium">Cliente & Placa</th>
-                                <th class="py-3 px-5 font-medium">Veículo & Serviços</th>
-                                <th class="py-3 px-5 font-medium text-center">Pagamento</th>
-                                <th class="py-3 px-5 font-medium text-right">Valor</th>
-                                <th class="py-3 px-5 font-medium text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-lavagens-recentes" class="divide-y divide-slate-800/60 text-sm"></tbody>
-                    </table>
-                </div>
-                <div id="vazio-lavagens" class="hidden py-10 text-center text-slate-500 text-sm">
-                    Nenhuma lavagem registrada neste período.
-                </div>
-            </section>
-        </div>
-
-        <!-- ===================================================================== -->
-        <!-- ABA 2: NOVA LAVAGEM & FIDELIDADE AUTOMÁTICA                           -->
-                    <div class="lg:col-span-3 flex gap-2">
-                        <div class="flex-1">
-                            <label for="gasto-data" class="block text-xs font-medium text-slate-300 mb-1.5">Data *</label>
-                            <input type="date" id="gasto-data" required
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 [color-scheme:dark]">
-                        </div>
-                        <button type="submit" class="self-end px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-sm shadow-lg shadow-rose-600/20 transition-all">
-                            Salvar
-                        </button>
-                    </div>
                 </form>
             </div>
 
@@ -756,6 +731,7 @@
         let gastos = [];
         let veiculoAtual = 'moto';
         let statusPagamentoAtual = 'pago';
+        let formaPagamentoAtual = 'pix';
         let resgateGratisAtivo = false;
         let periodoDashboard = 'mes';
         let chartReceitaGasto = null;
@@ -862,11 +838,9 @@
             if (temLocalStorage && (lsLavagens.length > 0 || lsGastos.length > 0)) {
                 lavagens = lsLavagens;
                 gastos = lsGastos;
-                // Mantém IndexedDB espelhado
                 await salvarNoIndexedDB({ lavagens, gastos, atualizadoEm: new Date().toISOString() });
                 atualizarSeloPersistencia(idbDados?.atualizadoEm);
             } else if (idbDados && (Array.isArray(idbDados.lavagens) || Array.isArray(idbDados.gastos))) {
-                // Recupera do IndexedDB caso o localStorage tenha sido limpo pelo navegador
                 lavagens = idbDados.lavagens || [];
                 gastos = idbDados.gastos || [];
                 try {
@@ -951,6 +925,21 @@
             } else {
                 btnAberto.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-amber-500 bg-amber-500/15 text-amber-300 text-xs sm:text-sm font-bold transition-all';
                 btnPago.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all';
+            }
+            lucide.createIcons();
+        }
+
+        function selecionarFormaPagamento(forma) {
+            formaPagamentoAtual = forma;
+            const btnPix = document.getElementById('btn-forma-pix');
+            const btnDinheiro = document.getElementById('btn-forma-dinheiro');
+
+            if (forma === 'pix') {
+                btnPix.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-cyan-500 bg-cyan-500/15 text-cyan-300 text-xs sm:text-sm font-bold transition-all';
+                btnDinheiro.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all';
+            } else {
+                btnDinheiro.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 text-xs sm:text-sm font-bold transition-all';
+                btnPix.className = 'flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white text-xs sm:text-sm font-semibold transition-all';
             }
             lucide.createIcons();
         }
@@ -1227,6 +1216,7 @@
                 const obsDesconto = document.getElementById('lav-obs-desconto').value.trim();
                 const agora = new Date();
                 const statusFinal = (resgateGratisAtivo || preco === 0) ? 'pago' : statusPagamentoAtual;
+                const formaFinal = (resgateGratisAtivo || preco === 0) ? 'fidelidade' : formaPagamentoAtual;
 
                 const novaLavagem = {
                     id: Date.now().toString(),
@@ -1239,6 +1229,7 @@
                     obsDesconto,
                     valor: preco,
                     statusPagamento: statusFinal,
+                    formaPagamento: formaFinal,
                     isGratis: resgateGratisAtivo,
                     timestamp: agora.toISOString()
                 };
@@ -1257,6 +1248,7 @@
                 if (boxStatusPag) boxStatusPag.classList.remove('hidden');
                 resgateGratisAtivo = false;
                 selecionarStatusPagamento('pago');
+                selecionarFormaPagamento('pix');
                 selecionarVeiculo('moto');
 
                 atualizarTudo();
@@ -1294,6 +1286,7 @@
             const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             const temDesconto = !lav.isGratis && lav.desconto > 0;
             const isEmAberto = !lav.isGratis && (lav.statusPagamento || 'pago') === 'em_aberto';
+            const formaLabel = (lav.formaPagamento || 'pix') === 'dinheiro' ? 'Dinheiro' : 'PIX';
 
             const clienteResumo = buscarClientePorNomeOuPlaca(lav.cliente, lav.placa);
             const textoFidelidade = clienteResumo
@@ -1309,6 +1302,7 @@
                 `✨ Serviços: ${lav.servicos}\n` +
                 (temDesconto ? `🏷️ Desconto: - ${formatarMoeda(lav.desconto)}${lav.obsDesconto ? ` (${lav.obsDesconto})` : ''}\n` : '') +
                 `💰 Valor: ${lav.isGratis ? 'GRÁTIS (Prêmio Fidelidade!)' : formatarMoeda(lav.valor)}\n` +
+                (!lav.isGratis ? `💳 Forma: ${formaLabel}\n` : '') +
                 `📌 Pagamento: ${lav.isGratis ? 'QUITADO (Fidelidade)' : (isEmAberto ? '⏳ EM ABERTO' : '✅ PAGO')}\n` +
                 (textoFidelidade ? `\n${textoFidelidade}` : '');
 
@@ -1321,6 +1315,7 @@
                     <p><span class="text-slate-400">Cliente:</span> <strong class="text-white">${escapeHTML(lav.cliente)}</strong> (${lav.placa})</p>
                     <p><span class="text-slate-400">Serviços:</span> <span class="text-slate-200">${escapeHTML(lav.servicos)}</span></p>
                     ${temDesconto ? `<p><span class="text-slate-400">Desconto aplicado:</span> <strong class="text-rose-400">- ${formatarMoeda(lav.desconto)}</strong> ${lav.obsDesconto ? `<span class="text-slate-500">(${escapeHTML(lav.obsDesconto)})</span>` : ''}</p>` : ''}
+                    ${!lav.isGratis ? `<p><span class="text-slate-400">Forma de Pagamento:</span> <strong class="${formaLabel === 'PIX' ? 'text-cyan-400' : 'text-emerald-400'}">${formaLabel}</strong></p>` : ''}
                     <p><span class="text-slate-400">Status:</span> ${isEmAberto ? '<strong class="text-amber-400">⏳ EM ABERTO</strong>' : '<strong class="text-emerald-400">✅ PAGO</strong>'}</p>
                     <p><span class="text-slate-400">Total:</span> <strong class="text-emerald-400 text-sm">${lav.isGratis ? 'R$ 0,00 (Fidelidade)' : formatarMoeda(lav.valor)}</strong></p>
                     ${textoFidelidade ? `<p class="pt-1 text-amber-300 font-medium">${textoFidelidade}</p>` : ''}
@@ -1391,9 +1386,19 @@
             const faturamentoPago = lavFiltradas
                 .filter(l => (l.statusPagamento || 'pago') === 'pago')
                 .reduce((acc, l) => acc + l.valor, 0);
+
+            const totalPix = lavFiltradas
+                .filter(l => !l.isGratis && (l.statusPagamento || 'pago') === 'pago' && (l.formaPagamento || 'pix') === 'pix')
+                .reduce((acc, l) => acc + l.valor, 0);
+
+            const totalDinheiro = lavFiltradas
+                .filter(l => !l.isGratis && (l.statusPagamento || 'pago') === 'pago' && l.formaPagamento === 'dinheiro')
+                .reduce((acc, l) => acc + l.valor, 0);
+
             const valorEmAberto = lavFiltradas
                 .filter(l => !l.isGratis && (l.statusPagamento || 'pago') === 'em_aberto')
                 .reduce((acc, l) => acc + l.valor, 0);
+
             const totalGastos = gasFiltrados.reduce((acc, g) => acc + g.valor, 0);
             const lucro = faturamentoPago - totalGastos;
             const qtdGratis = lavFiltradas.filter(l => l.isGratis).length;
@@ -1402,9 +1407,14 @@
             const elFatSub = document.getElementById('dash-faturamento-sub');
             if (elFatSub) {
                 elFatSub.innerHTML = valorEmAberto > 0
-                    ? `<span class="text-amber-400 font-medium">Em aberto: ${formatarMoeda(valorEmAberto)}</span>`
+                    ? `<span class="text-amber-400 font-medium">⏳ Em aberto: ${formatarMoeda(valorEmAberto)}</span>`
                     : 'Tudo recebido no período';
             }
+            const elFatMeios = document.getElementById('dash-faturamento-meios');
+            if (elFatMeios) {
+                elFatMeios.innerHTML = `<span class="text-cyan-400 font-medium">PIX: ${formatarMoeda(totalPix)}</span> • <span class="text-emerald-400 font-medium">Dinheiro: ${formatarMoeda(totalDinheiro)}</span>`;
+            }
+
             document.getElementById('dash-gastos').textContent = formatarMoeda(totalGastos);
 
             const elLucro = document.getElementById('dash-lucro');
@@ -1435,6 +1445,16 @@
             mostrarToast(lav.statusPagamento === 'pago' ? 'Pagamento marcado como PAGO!' : 'Pagamento marcado como EM ABERTO.');
         }
 
+        function alternarFormaPagamentoLavagem(id) {
+            const lav = lavagens.find(l => l.id === id);
+            if (!lav || lav.isGratis) return;
+            const atual = lav.formaPagamento || 'pix';
+            lav.formaPagamento = atual === 'pix' ? 'dinheiro' : 'pix';
+            salvarDados();
+            atualizarTudo();
+            mostrarToast(`Forma de pagamento alterada para ${lav.formaPagamento === 'pix' ? 'PIX' : 'Dinheiro'}.`);
+        }
+
         function renderizarTabelaLavagensRecentes(lista) {
             const tbody = document.getElementById('tabela-lavagens-recentes');
             const vazio = document.getElementById('vazio-lavagens');
@@ -1450,6 +1470,7 @@
                 const dt = new Date(lav.timestamp);
                 const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 const isEmAberto = !lav.isGratis && (lav.statusPagamento || 'pago') === 'em_aberto';
+                const isDinheiro = (lav.formaPagamento || 'pix') === 'dinheiro';
                 return `
                     <tr class="hover:bg-slate-800/40 transition-colors">
                         <td class="py-3 px-5 text-xs font-mono text-slate-400 whitespace-nowrap">${dataFmt}</td>
@@ -1465,13 +1486,21 @@
                         <td class="py-3 px-5 text-center whitespace-nowrap">
                             ${lav.isGratis
                                 ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">Fidelidade</span>'
-                                : `<button onclick="alternarStatusPagamentoLavagem('${lav.id}')" title="Clique para alternar entre Pago e Em Aberto"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${isEmAberto
-                                        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25'
-                                        : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/25'}">
-                                    <span class="w-1.5 h-1.5 rounded-full ${isEmAberto ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-                                    ${isEmAberto ? 'Em Aberto' : 'Pago'}
-                                  </button>`
+                                : `<div class="inline-flex flex-col items-center gap-1">
+                                    <button onclick="alternarStatusPagamentoLavagem('${lav.id}')" title="Clique para alternar entre Pago e Em Aberto"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${isEmAberto
+                                            ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 hover:bg-amber-500/25'
+                                            : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/25'}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${isEmAberto ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+                                        ${isEmAberto ? 'Em Aberto' : 'Pago'}
+                                    </button>
+                                    <button onclick="alternarFormaPagamentoLavagem('${lav.id}')" title="Clique para alternar entre PIX e Dinheiro"
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${isDinheiro
+                                            ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700/50 hover:bg-emerald-900/60'
+                                            : 'bg-cyan-950/60 text-cyan-300 border-cyan-700/50 hover:bg-cyan-900/60'}">
+                                        ${isDinheiro ? '💵 Dinheiro' : '💠 PIX'}
+                                    </button>
+                                   </div>`
                             }
                         </td>
                         <td class="py-3 px-5 text-right whitespace-nowrap">
@@ -1603,7 +1632,7 @@
             chartReceitaGasto = new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: ['Faturamento (Lavagens)', 'Gastos (Despesas)', 'Lucro Líquido'],
+                    labels: ['Faturamento (Recebido)', 'Gastos (Despesas)', 'Lucro Líquido'],
                     datasets: [{
                         data: [faturamento, totalGastos, Math.max(0, faturamento - totalGastos)],
                         backgroundColor: ['#10b981', '#f43f5e', '#06b6d4'],
